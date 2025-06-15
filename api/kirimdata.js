@@ -19,11 +19,11 @@ const db = admin.firestore();
 // Endpoint untuk kirim data kotak amal ke Firestore
 app.post("/api/kirimdata", async (req, res) => {
   try {
-    console.log("Data diterima:", req.body);
+    console.log("📥 Data diterima:", req.body);
 
-    const { nominal_uang, timestamp } = req.body;
+    const { nominal_uang } = req.body;
 
-    // Validasi field nominal_uang
+    // Validasi nominal_uang
     if (nominal_uang === undefined || isNaN(Number(nominal_uang))) {
       return res.status(400).json({
         success: false,
@@ -31,19 +31,21 @@ app.post("/api/kirimdata", async (req, res) => {
       });
     }
 
-    // Validasi field timestamp
-    if (!timestamp || isNaN(new Date(timestamp).getTime())) {
-      return res.status(400).json({
-        success: false,
-        message: "Field 'timestamp' wajib diisi dan harus berupa waktu yang valid"
-      });
-    }
+    // Ambil waktu saat ini dalam zona waktu Asia/Jakarta (WIB)
+    const jakartaDate = new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Jakarta"
+    });
+
+    // Ubah menjadi objek Date lalu ke Firestore Timestamp
+    const timestamp = admin.firestore.Timestamp.fromDate(new Date(jakartaDate));
 
     // Simpan ke koleksi Firestore
     await db.collection("history_kotak_amal").add({
       nominal_uang: Number(nominal_uang),
-      timestamp: new Date(timestamp)
+      timestamp: timestamp
     });
+
+    console.log("✅ Data berhasil disimpan pada:", jakartaDate);
 
     return res.status(200).json({
       success: true,
