@@ -41,8 +41,17 @@ app.post("/api/kirimdata", async (req, res) => {
     // Konversi ke Firestore Timestamp
     const timestamp = admin.firestore.Timestamp.fromDate(wibTime);
 
-    // Logging waktu dalam format lokal (untuk debug/log)
-    const jakartaDateLog = wibTime.toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
+    // Logging waktu dalam format lokal (untuk debug/log dan response)
+    const jakartaDateLog = wibTime.toLocaleString("id-ID", {
+      timeZone: "Asia/Jakarta",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
 
     // Simpan ke Firestore
     await db.collection("history_kotak_amal").add({
@@ -50,11 +59,11 @@ app.post("/api/kirimdata", async (req, res) => {
       timestamp: timestamp
     });
 
-    console.log("✅ Data berhasil disimpan pada:", jakartaDateLog);
+    console.log(`✅ Data berhasil disimpan: Rp ${nominal_uang} pada ${jakartaDateLog}`);
 
     return res.status(200).json({
       success: true,
-      message: "Data kotak amal berhasil disimpan ke Firestore"
+      message: `Data berhasil dikirim! Nominal: Rp ${nominal_uang} pada ${jakartaDateLog}`
     });
 
   } catch (error) {
