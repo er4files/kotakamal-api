@@ -31,21 +31,26 @@ app.post("/api/kirimdata", async (req, res) => {
       });
     }
 
-    // Ambil waktu saat ini dalam zona waktu Asia/Jakarta (WIB)
-    const jakartaDate = new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Jakarta"
-    });
+    // Ambil waktu UTC sekarang
+    const nowUtc = new Date();
 
-    // Ubah menjadi objek Date lalu ke Firestore Timestamp
-    const timestamp = admin.firestore.Timestamp.fromDate(new Date(jakartaDate));
+    // Geser waktu ke zona WIB (UTC+7)
+    const offsetWIB = 7 * 60; // 7 jam dalam menit
+    const wibTime = new Date(nowUtc.getTime() + offsetWIB * 60 * 1000);
 
-    // Simpan ke koleksi Firestore
+    // Konversi ke Firestore Timestamp
+    const timestamp = admin.firestore.Timestamp.fromDate(wibTime);
+
+    // Logging waktu dalam format lokal (untuk debug/log)
+    const jakartaDateLog = wibTime.toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
+
+    // Simpan ke Firestore
     await db.collection("history_kotak_amal").add({
       nominal_uang: Number(nominal_uang),
       timestamp: timestamp
     });
 
-    console.log("✅ Data berhasil disimpan pada:", jakartaDate);
+    console.log("✅ Data berhasil disimpan pada:", jakartaDateLog);
 
     return res.status(200).json({
       success: true,
