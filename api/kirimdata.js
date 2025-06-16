@@ -31,18 +31,14 @@ app.post("/api/kirimdata", async (req, res) => {
       });
     }
 
-    // Ambil waktu UTC sekarang
-    const nowUtc = new Date();
-
-    // Geser waktu ke zona WIB (UTC+7)
-    const offsetWIB = 7 * 60; // 7 jam dalam menit
-    const wibTime = new Date(nowUtc.getTime() + offsetWIB * 60 * 1000);
+    // Gunakan waktu sekarang tanpa manipulasi (asumsikan server sudah WIB atau gunakan timeZone saat format)
+    const currentDate = new Date();
 
     // Konversi ke Firestore Timestamp
-    const timestamp = admin.firestore.Timestamp.fromDate(wibTime);
+    const timestamp = admin.firestore.Timestamp.fromDate(currentDate);
 
-    // Logging waktu dalam format lokal (untuk debug/log dan response)
-    const jakartaDateLog = wibTime.toLocaleString("id-ID", {
+    // Format waktu lokal Asia/Jakarta (WIB) untuk log dan response
+    const jakartaDateLog = currentDate.toLocaleString("id-ID", {
       timeZone: "Asia/Jakarta",
       weekday: "long",
       year: "numeric",
@@ -61,6 +57,7 @@ app.post("/api/kirimdata", async (req, res) => {
 
     console.log(`✅ Data berhasil disimpan: Rp ${nominal_uang} pada ${jakartaDateLog}`);
 
+    // Kirim response sukses dengan detail
     return res.status(200).json({
       success: true,
       message: `Data berhasil dikirim! Nominal: Rp ${nominal_uang} pada ${jakartaDateLog}`
